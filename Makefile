@@ -9,3 +9,5 @@ run:
 	docker run $(IMAGE_URI)
 push:
 	docker push $(IMAGE_URI)
+conda-save:
+	conda list -e > req/req.txt
