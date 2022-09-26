@@ -1,4 +1,11 @@
-from pytorch_lightning import Trainer
+import hydra
+from omegaconf import DictConfig
 
-from src.model.modules.diffusion import DiffusionModule
 
+@hydra.main(version_base=None, config_path="config", config_name="config")
+def main(cfg: DictConfig):
+    pass
+
+
+if __name__ == "__main__":
+    main()

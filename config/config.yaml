@@ -1,0 +1,15 @@
+data_dir: ./data
+data_loaders:
+  train:
+    batch_size: 8
+    shuffle: True
+  val:
+    batch_size: 8
+    shuffle: False
+  test:
+    batch_size: 8
+    shuffle: False
+
+hydra:
+  run:
+    dir: logs/${now:%Y%m%d_%H%M%S}
