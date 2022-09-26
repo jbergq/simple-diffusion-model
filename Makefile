@@ -1,7 +1,7 @@
-PROJECT_ID="simple_diffusion"
-IMAGE_ID="simple_diffusion_image"
-VERSION_ID="v1.0"
-IMAGE_URI="gcr.io/$(PROJECT_ID)/$(IMAGE_ID):$(VERSION_ID)"
+PROJECT_ID=simple_diffusion
+IMAGE_ID=simple_diffusion_image
+VERSION_ID=v1.0
+IMAGE_URI=gcr.io/$(PROJECT_ID)/$(IMAGE_ID):$(VERSION_ID)
 
 build:
 	docker build . -t $(IMAGE_URI)
@@ -10,8 +10,10 @@ run:
 push:
 	docker push $(IMAGE_URI)
 env-create:
-	mamba create --name $(PROJECT_ID) python=3.8 --file req/req.txt
+	mamba create --name $(PROJECT_ID) python=3.8
+env-install:
+	mamba env update --file req/environment.yaml
 env-activate:
-	mamba activate $(PROJECT_ID)
+	conda activate $(PROJECT_ID)
 env-save:
-	mamba list -e > req/req.txt
+	conda env export --from-history | grep -v "^prefix: " > req/environment.yaml

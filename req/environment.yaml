@@ -1,0 +1,14 @@
+name: simple_diffusion
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python==3.8
+  - matplotlib
+  - opencv
+  - imageio
+  - ipykernel
+  - pytorch-lightning
+  - lightning-bolts
+  - hydra
+  - black
