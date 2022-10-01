@@ -18,7 +18,7 @@ class MNIST(MNIST):
         if not self.transform is None:
             imgs = self.transform(imgs)
 
-        imgs_d = forward_diffusion(imgs, betas=np.array(0.1))
+        imgs_d = forward_diffusion(imgs, betas=np.array(0.1)).astype(np.float32)
         sample = {"img": imgs, "img_d": imgs_d}
 
         return sample
