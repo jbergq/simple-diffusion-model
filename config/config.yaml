@@ -19,6 +19,8 @@ datamodule:
     test:
       batch_size: 8
       shuffle: False
+trainer:
+  _target_: pytorch_lightning.Trainer
 hydra:
   run:
     dir: logs/${now:%Y%m%d_%H%M%S}
