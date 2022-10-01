@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+import torch
 from torch.optim import Adam
 from pytorch_lightning import LightningModule
 from pl_bolts.models.vision.unet import UNet
@@ -12,10 +13,10 @@ class DiffusionModule(LightningModule):
         self.network = UNet(1, 1)
 
     def training_step(self, batch, *args, **kwargs) -> Dict[str, Any]:
-        imgs, labels = batch
+        imgs = batch["img"]
         out = self.network(imgs)
 
-        return {"loss": 0}
+        return {"loss": torch.tensor(0)}
 
     def validation_step(self, *args, **kwargs) -> None:
         pass
