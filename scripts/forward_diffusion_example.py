@@ -14,6 +14,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
+from src.utils.diffusion import forward_diffusion
+
 # %%
 
 data_dir = Path("../data")
@@ -79,13 +81,7 @@ imageio.mimsave(
 #
 # Because sum of normal distr. variables is also norm dist., can express x_t in terms of x_0.
 
-alpha_t = 1 - beta_t
-
-alpha_hat = np.prod(alpha_t)
-
-x_t_hat = np.random.normal(
-    np.sqrt(alpha_hat) * x, np.sqrt(1 - alpha_hat) * np.identity(x.shape[-1])
-)
+x_t_hat = forward_diffusion(x, beta_t)
 
 fig, axs = plt.subplots(2)
 
