@@ -11,12 +11,15 @@ from pathlib import Path
 import imageio
 import cv2
 import numpy as np
-import matplotlib
 import matplotlib.pyplot as plt
 
 from src.utils.diffusion import forward_diffusion
+from src.data.datasets.mnist import MNIST
 
-# %%
+dataset = MNIST("../data", train=True, download=True)
+
+
+# %% Load example image
 
 data_dir = Path("../data")
 
@@ -24,6 +27,11 @@ img_path = data_dir / "apple-touch-icon-144x144-precomposed.png"
 img = cv2.imread(str(img_path))[:, :, :1]
 img = img / 255
 
+# %% Load MNIST image
+
+img = dataset[0]["img"][0]
+
+# %%
 x = img
 x_t = x
 
