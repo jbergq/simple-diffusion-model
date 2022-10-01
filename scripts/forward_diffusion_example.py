@@ -1,4 +1,10 @@
 # %%
+
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path.cwd().parent.absolute()))
+
 import re
 from pathlib import Path
 
