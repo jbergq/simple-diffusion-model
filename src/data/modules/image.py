@@ -7,11 +7,11 @@ from ..datasets.mnist import MNIST
 
 
 class ImageDataModule(LightningDataModule):
-    def __init__(self, data_dir: str, data_loader_cfg: DictConfig) -> None:
+    def __init__(self, data_dir: str, data_loaders: DictConfig) -> None:
         super().__init__()
 
         self.data_dir = data_dir
-        self.data_loader_cfg = data_loader_cfg
+        self.data_loader_cfg = data_loaders
 
     def setup(self, stage: str):
         mnist_full = MNIST(
