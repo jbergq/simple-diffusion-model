@@ -5,10 +5,12 @@ from omegaconf import DictConfig
 
 @hydra.main(version_base=None, config_path="config", config_name="config")
 def main(cfg: DictConfig):
+    # Instantiate modules and trainer.
     datamodule = instantiate(cfg.datamodule)
     model = instantiate(cfg.model)
     trainer = instantiate(cfg.trainer)
 
+    # Start the training.
     trainer.fit(model, datamodule)
 
 
