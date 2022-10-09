@@ -23,6 +23,7 @@ trainer:
   _target_: pytorch_lightning.Trainer
   max_epochs: 10
   fast_dev_run: True
+
 hydra:
   run:
     dir: logs/${now:%Y%m%d_%H%M%S}
