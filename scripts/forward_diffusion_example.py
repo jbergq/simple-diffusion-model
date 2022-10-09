@@ -12,11 +12,12 @@ import imageio
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from torchvision.transforms import ToTensor
 
 from src.utils.diffusion import forward_diffusion
 from src.data.datasets.mnist import MNIST
 
-dataset = MNIST("../data", train=True, download=True)
+dataset = MNIST("../data", train=True, download=True, transform=ToTensor())
 
 
 # %% Load example image
@@ -50,6 +51,7 @@ for i in range(num_iters):
 
 out_dir = Path("../output")
 plot_dir = out_dir / "plots"
+plot_dir.mkdir(exist_ok=True)
 
 # matplotlib.use("Agg")
 
