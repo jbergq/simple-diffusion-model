@@ -1,7 +1,8 @@
 name: simple_diffusion
 channels:
-  - conda-forge
   - pytorch
+  - conda-forge
+  - defaults
 dependencies:
   - python==3.8
   - matplotlib
@@ -12,3 +13,7 @@ dependencies:
   - lightning-bolts
   - hydra
   - black
+  - torchvision
+  - ca-certificates
+  - certifi
+  - openssl
