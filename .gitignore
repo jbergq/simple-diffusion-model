@@ -129,6 +129,9 @@ dmypy.json
 .pyre/
 
 # Custom
-data/
-output/
-logs/
+data/**
+output/**
+logs/**
+!data/.gitkeep
+!output/.gitkeep
+!logs/.gitkeep
