@@ -1,7 +1,4 @@
-import torch
 from torchvision.datasets import MNIST
-
-from src.utils.diffusion import forward_diffusion
 
 
 class MNIST(MNIST):
