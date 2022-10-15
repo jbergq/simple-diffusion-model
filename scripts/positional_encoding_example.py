@@ -7,10 +7,10 @@ sys.path.append(str(Path.cwd().parent.absolute()))
 
 import torch
 import matplotlib.pyplot as plt
-from matplotlib import colors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from src.model.network.layers.positional_encoding import PositionalEncoding
+from src.model.network.layers.resnet_block import ResNetBlock
 
 # Get time steps
 num_t_steps = 100
@@ -57,5 +57,15 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im, cax=cax)
 plt.show()
+
+# %% Inject into ResNet block
+
+inp = torch.normal(0, 1, (1, 3, 256, 256))
+t = torch.tensor([100])
+
+emb = pos_enc(t)
+resnet_block = ResNetBlock(3, 128, downsample=True, t_emb_dim=emb_size)
+
+out = resnet_block(inp, emb)
 
 # %%
