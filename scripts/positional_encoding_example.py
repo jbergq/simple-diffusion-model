@@ -1,5 +1,4 @@
-# %%
-
+# %% 
 import sys
 from pathlib import Path
 
@@ -60,12 +59,20 @@ plt.show()
 
 # %% Inject into ResNet block
 
-inp = torch.normal(0, 1, (1, 3, 256, 256))
+inp = torch.normal(0, 1, (1, 128, 256, 256))
 t = torch.tensor([100])
 
 emb = pos_enc(t)
-resnet_block = ResNetBlock(3, 128, downsample=True, t_emb_dim=emb_size)
+resnet_block = ResNetBlock(128, 128, t_emb_dim=emb_size)
+resnet_block_ds = ResNetBlock(128, 256, t_emb_dim=emb_size, downsample=True)
+resnet_block_us = ResNetBlock(128, 64, t_emb_dim=emb_size, upsample=True)
 
-out = resnet_block(inp, emb)
+out1 = resnet_block(inp, emb)
+out2 = resnet_block_ds(inp, emb)
+out3 = resnet_block_us(inp, emb)
+
+print(out1.shape)
+print(out2.shape)
+print(out3.shape)
 
 # %%
