@@ -23,12 +23,10 @@ class DiffusionModule(LightningModule):
         alpha_hat = alpha_hat[:, None, None, None]
         noise = torch.normal(0, 1, imgs.shape)
 
-        # Apply noise to images (N steps forward diffusion in closed form)
+        # Apply noise to images (N steps forward diffusion in closed form).
         imgs_d = torch.sqrt(alpha_hat) * imgs + torch.sqrt(1 - alpha_hat) * noise
 
-        # TODO(jonathanb): Positional encoding for ts?
-
-        noise_pred = self.network(imgs_d)
+        noise_pred = self.network(imgs_d, ts)
 
         loss = self.loss(noise_pred, noise)
 

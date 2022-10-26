@@ -7,12 +7,16 @@ from einops import rearrange
 
 
 def conv3x3(
-    in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1
+    in_size: int,
+    out_size: int,
+    stride: int = 1,
+    groups: int = 1,
+    dilation: int = 1,
 ) -> nn.Conv2d:
     """3x3 convolution with padding"""
     return nn.Conv2d(
-        in_planes,
-        out_planes,
+        in_size,
+        out_size,
         kernel_size=3,
         stride=stride,
         padding=dilation,
@@ -22,9 +26,9 @@ def conv3x3(
     )
 
 
-def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
+def conv1x1(in_size: int, out_size: int, stride: int = 1) -> nn.Conv2d:
     """1x1 convolution"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+    return nn.Conv2d(in_size, out_size, kernel_size=1, stride=stride, bias=False)
 
 
 class ResNetBlock(nn.Module):
@@ -32,37 +36,42 @@ class ResNetBlock(nn.Module):
 
     def __init__(
         self,
-        inplanes: int,
-        planes: int,
+        in_size: int,
+        out_size: int,
         t_dim: Optional[int] = None,
         activation: nn.Module = nn.SiLU,
         downsample: Optional[bool] = False,
         upsample: Optional[bool] = False,
+        skip_size: Optional[int] = None,
     ) -> None:
         super().__init__()
 
         self.act = activation(inplace=True)
-        conv1_stride = 2 if downsample else 1
 
         self.t_proj = (
-            nn.Sequential(self.act, nn.Linear(t_dim, planes))
+            nn.Sequential(self.act, nn.Linear(t_dim, out_size))
             if t_dim is not None
             else None
         )
-        self.conv1 = conv3x3(inplanes, planes, conv1_stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
+
+        conv1_stride = 2 if downsample else 1
+        conv1_in_size = in_size + skip_size if upsample else in_size
 
         if downsample:
             self.ds_skip = nn.Sequential(
-                conv1x1(inplanes, planes, conv1_stride), nn.BatchNorm2d(planes)
+                conv1x1(in_size, out_size, conv1_stride), nn.BatchNorm2d(out_size)
             )
         if upsample:
             self.us_skip = nn.Sequential(
-                nn.Upsample(scale_factor=2), conv1x1(inplanes, planes)
+                nn.Upsample(scale_factor=2), conv1x1(in_size, out_size)
             )
             self.us_hidden = nn.Upsample(scale_factor=2)
+
+        self.conv1 = conv3x3(conv1_in_size, out_size, conv1_stride)
+        self.bn1 = nn.BatchNorm2d(out_size)
+        self.conv2 = conv3x3(out_size, out_size)
+        self.bn2 = nn.BatchNorm2d(out_size)
+
         self.downsample = downsample
         self.upsample = upsample
 
