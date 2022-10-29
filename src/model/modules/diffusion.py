@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+import cv2
 import torch
 from torch.optim import Adam
 from pytorch_lightning import LightningModule
@@ -32,8 +33,26 @@ class DiffusionModule(LightningModule):
 
         return {"loss": loss}
 
-    def validation_step(self, *args, **kwargs) -> None:
-        pass
+    def validation_step(self, batch, *args, **kwargs) -> None:
+        imgs = batch["img"]
+        num_imgs = imgs.shape[0]
+
+        x = torch.normal(0, 1, imgs.shape)
+
+        for t_step in range(self.t_max):
+            ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
+            z = torch.normal(0, 1, imgs.shape)
+            alpha = torch.ones((num_imgs,)) * 1 - self.beta
+            alpha = alpha[:, None, None, None]
+
+            noise_pred = self.network(x, ts)
+
+            x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
+            x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
+
+        cv2.imwrite(
+            "output/test.png", x[0, :].repeat(3, 1, 1).numpy().transpose(1, 2, 0) * 255
+        )
 
     def configure_optimizers(self):
         return Adam(self.network.parameters(), lr=1e-3)
