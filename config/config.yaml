@@ -1,9 +1,9 @@
 model:
   _target_: src.model.modules.diffusion.DiffusionModule
   network:
-    _target_: pl_bolts.models.vision.unet.UNet
-    num_classes: 1
-    input_channels: 1
+    _target_: src.model.network.unet.UNet
+    in_size: 1
+    out_size: 1
   loss:
     _target_: torch.nn.MSELoss
 datamodule:
@@ -22,7 +22,7 @@ datamodule:
 trainer:
   _target_: pytorch_lightning.Trainer
   max_epochs: 10
-  fast_dev_run: True
+  fast_dev_run: False
 
 hydra:
   run:

@@ -46,7 +46,7 @@ class ResNetBlock(nn.Module):
     ) -> None:
         super().__init__()
 
-        self.act = activation(inplace=True)
+        self.act = activation(inplace=False)
 
         self.t_proj = (
             nn.Sequential(self.act, nn.Linear(t_dim, out_size))

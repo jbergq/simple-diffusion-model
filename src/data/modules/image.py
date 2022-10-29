@@ -1,6 +1,6 @@
 from omegaconf import DictConfig
 from torch.utils.data import DataLoader, random_split
-from torchvision.transforms import ToTensor
+from torchvision.transforms import Compose, ToTensor, Pad
 from pytorch_lightning import LightningDataModule
 
 from ..datasets.mnist import MNIST
@@ -15,7 +15,10 @@ class ImageDataModule(LightningDataModule):
 
     def setup(self, stage: str):
         mnist_full = MNIST(
-            self.data_dir, train=True, transform=ToTensor(), download=True
+            self.data_dir,
+            train=True,
+            transform=Compose([Pad(2), ToTensor()]),
+            download=True,
         )
         self.mnist_train, self.mnist_val = random_split(mnist_full, [55000, 5000])
 
