@@ -42,7 +42,7 @@ class ResNetBlock(nn.Module):
         in_size: int,
         out_size: int,
         t_dim: Optional[int] = None,
-        activation: nn.Module = nn.SiLU,
+        activation: Optional[nn.Module] = nn.SiLU,
         ... # Omitting details
     ) -> None:
         super().__init__()
