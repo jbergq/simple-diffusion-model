@@ -39,11 +39,16 @@ class DiffusionModule(LightningModule):
 
         x = torch.normal(0, 1, imgs.shape)
 
-        for t_step in range(self.t_max):
+        for t_step in reversed(range(self.t_max)):
             ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
-            z = torch.normal(0, 1, imgs.shape)
             alpha = torch.ones((num_imgs,)) * 1 - self.beta
             alpha = alpha[:, None, None, None]
+
+            if t_step == 0:
+                z = torch.zeros(imgs.shape)
+            else:
+                z = torch.normal(0, 1, imgs.shape)
+
 
             noise_pred = self.network(x, ts)
 
