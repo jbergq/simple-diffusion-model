@@ -48,11 +48,10 @@ class ResNetBlock(nn.Module):
 
         self.act = activation(inplace=False)
 
-        self.t_proj = (
-            nn.Sequential(self.act, nn.Linear(t_dim, out_size))
-            if t_dim is not None
-            else None
-        )
+        if t_dim is not None:
+            self.t_proj = nn.Sequential(self.act, nn.Linear(t_dim, out_size))
+        else:
+            self.t_proj = None
 
         conv1_stride = 2 if downsample else 1
         conv1_in_size = in_size + skip_size if upsample else in_size
