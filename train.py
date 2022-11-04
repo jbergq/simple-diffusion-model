@@ -1,14 +1,15 @@
 import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig
+from pytorch_lightning import Trainer, LightningDataModule, LightningModule
 
 
 @hydra.main(config_path="config", config_name="config")
 def main(cfg: DictConfig):
     # Instantiate modules and trainer.
-    datamodule = instantiate(cfg.datamodule)
-    model = instantiate(cfg.model)
-    trainer = instantiate(cfg.trainer)
+    datamodule: LightningDataModule = instantiate(cfg.datamodule)
+    model: LightningModule = instantiate(cfg.model)
+    trainer: Trainer = instantiate(cfg.trainer)
 
     # Start the training.
     trainer.fit(model, datamodule)

@@ -1,13 +1,20 @@
-from typing import Any, Dict
+from typing import Any, Dict, Callable
 
-import cv2
 import torch
-from torch.optim import Adam
+import torch.nn as nn
+from torch.optim import Optimizer, Adam
 from pytorch_lightning import LightningModule
 
 
 class DiffusionModule(LightningModule):
-    def __init__(self, network, loss, t_min=1, t_max=100, beta=0.5) -> None:
+    def __init__(
+        self,
+        network: nn.Module,
+        loss: Callable,
+        t_min: int = 1,
+        t_max: int = 100,
+        beta: float = 0.5,
+    ) -> None:
         super().__init__()
 
         self.network = network
@@ -15,7 +22,7 @@ class DiffusionModule(LightningModule):
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
 
-    def training_step(self, batch, *args, **kwargs) -> Dict[str, Any]:
+    def training_step(self, batch: Dict, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         imgs = batch["img"]
         num_imgs = imgs.shape[0]
 
@@ -33,7 +40,7 @@ class DiffusionModule(LightningModule):
 
         return {"loss": loss}
 
-    def validation_step(self, batch, *args, **kwargs) -> None:
+    def validation_step(self, batch: Any, *args: Any, **kwargs: Any) -> None:
         imgs = batch["img"]
         num_imgs = imgs.shape[0]
 
@@ -49,15 +56,10 @@ class DiffusionModule(LightningModule):
             else:
                 z = torch.normal(0, 1, imgs.shape)
 
-
             noise_pred = self.network(x, ts)
 
             x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
             x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
 
-        cv2.imwrite(
-            "output/test.png", x[0, :].repeat(3, 1, 1).numpy().transpose(1, 2, 0) * 255
-        )
-
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)
