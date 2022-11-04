@@ -24,7 +24,8 @@ class PositionalEncoding(nn.Module):
         return self.pos_embeddings[t, :]
 ```
 
-The figure below shows the elements of each positional encoding vector plotted along the x-axis for each time step on the y-axis.
+The figure below shows the elements of each positional encoding vector plotted along the x-axis for each time step on the y-axis (see code [here](scripts/positional_encoding_example.py)).
+
 ![positional encoding](./imgs/pos_enc.png)
 
 ### ResNet block, w/ positional encoding injection
