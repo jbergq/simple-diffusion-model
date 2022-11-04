@@ -39,7 +39,7 @@ class UNet(nn.Module):
             layers.append(ResNetBlockDown(feats, feats * 2, t_dim=t_emb_size))
             feats *= 2
         for _ in range(num_layers - 1):
-            layers.append(ResNetBlockUp(feats, feats // 2, t_dim=t_emb_size, skip_size=feats // 2))
+            layers.append(ResNetBlockUp(feats, feats // 2, skip_size=feats // 2, t_dim=t_emb_size))
             feats //= 2
         self.layers = nn.ModuleList(layers)
 

@@ -36,21 +36,21 @@ class ResNetBlockUp(nn.Module):
         self,
         in_size: int,
         out_size: int,
+        skip_size: int,
         t_dim: Optional[int] = None,
         activation: Callable = nn.SiLU,
-        skip_size: Optional[int] = None,
     ) -> None:
         super().__init__()
 
         self.up = nn.Upsample(scale_factor=2)
         self.block = ResNetBlock(in_size + skip_size, out_size, t_dim, activation)
 
-    def forward(self, x: Tensor, x_enc: Tensor = None, t_emb: Tensor = None) -> Tensor:
+    def forward(self, x: Tensor, x_skip: Tensor = None, t_emb: Tensor = None) -> Tensor:
         x = self.up(x)
 
-        # Concatenate with encoder features.
-        if x_enc is not None:
-            x = torch.cat([x, x_enc], dim=1)
+        # Concatenate with encoder skip connection.
+        if x_skip is not None:
+            x = torch.cat([x, x_skip], dim=1)
 
         out = self.block(x, t_emb)
 
@@ -81,20 +81,16 @@ class ResNetBlock(nn.Module):
 
         self.act = activation(inplace=False)
 
-        if t_dim is not None:
-            self.t_proj = nn.Sequential(self.act, nn.Linear(t_dim, out_size))
-        else:
-            self.t_proj = None
+        self.t_proj = nn.Sequential(self.act, nn.Linear(t_dim, out_size)) if t_dim is not None else None
 
         self.conv1 = conv3x3(in_size, out_size, stride=stride)
         self.bn1 = nn.BatchNorm2d(out_size)
         self.conv2 = conv3x3(out_size, out_size)
         self.bn2 = nn.BatchNorm2d(out_size)
 
+        self.skip_conv: Optional[nn.Sequential] = None
         if in_size != out_size:
             self.skip_conv = nn.Sequential(conv1x1(in_size, out_size, stride), nn.BatchNorm2d(out_size))
-        else:
-            self.skip_conv = None
 
     def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
         x_skip = x

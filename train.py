@@ -5,7 +5,7 @@ from pytorch_lightning import LightningDataModule, LightningModule, Trainer
 
 
 @hydra.main(config_path="config", config_name="config")
-def main(cfg: DictConfig):
+def main(cfg: DictConfig) -> None:
     # Instantiate modules and trainer.
     datamodule: LightningDataModule = instantiate(cfg.datamodule)
     model: LightningModule = instantiate(cfg.model)
