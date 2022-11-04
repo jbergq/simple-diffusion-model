@@ -3,7 +3,7 @@ from torch import Tensor
 
 from src.model.network.layers.conv_block import ConvBlock
 from src.model.network.layers.positional_encoding import PositionalEncoding
-from src.model.network.layers.resnet_block import ResNetBlockUp, ResNetBlockDown
+from src.model.network.layers.resnet_block import ResNetBlockDown, ResNetBlockUp
 
 
 class UNet(nn.Module):

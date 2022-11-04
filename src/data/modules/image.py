@@ -1,10 +1,10 @@
 from typing import Optional
 
 from omegaconf import DictConfig
+from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import Compose, Pad, ToTensor
 
-from pytorch_lightning import LightningDataModule
 from src.data.datasets.mnist import MNIST
 
 
