@@ -12,6 +12,9 @@ push:
 check:
 	flake8 train.py test.py src
 	mypy train.py test.py src
+format:
+	black train.py test.py src
+	isort train.py test.py src
 env-create:
 	mamba create --name $(PROJECT_ID) python=3.8
 env-install:
