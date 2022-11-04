@@ -8,14 +8,14 @@ sys.path.append(str(Path.cwd().parent.absolute()))
 import re
 from pathlib import Path
 
-import imageio
 import cv2
-import numpy as np
+import imageio
 import matplotlib.pyplot as plt
+import numpy as np
 from torchvision.transforms import ToTensor
 
-from src.utils.diffusion import forward_diffusion
 from src.data.datasets.mnist import MNIST
+from src.utils.diffusion import forward_diffusion
 
 dataset = MNIST("../data", train=True, download=True, transform=ToTensor())
 

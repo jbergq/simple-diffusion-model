@@ -1,7 +1,8 @@
 import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig
-from pytorch_lightning import Trainer, LightningDataModule, LightningModule
+
+from pytorch_lightning import LightningDataModule, LightningModule, Trainer
 
 
 @hydra.main(config_path="config", config_name="config")

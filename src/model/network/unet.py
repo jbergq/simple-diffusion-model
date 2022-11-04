@@ -2,8 +2,8 @@ import torch.nn as nn
 from torch import Tensor
 
 from src.model.network.layers.conv_block import ConvBlock
-from src.model.network.layers.resnet_block import ResNetBlock
 from src.model.network.layers.positional_encoding import PositionalEncoding
+from src.model.network.layers.resnet_block import ResNetBlock
 
 
 class UNet(nn.Module):

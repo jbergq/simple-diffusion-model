@@ -4,8 +4,8 @@ from pathlib import Path
 
 sys.path.append(str(Path.cwd().parent.absolute()))
 
-import torch
 import matplotlib.pyplot as plt
+import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from src.model.network.layers.positional_encoding import PositionalEncoding

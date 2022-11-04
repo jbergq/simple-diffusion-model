@@ -1,8 +1,9 @@
-from typing import Any, Dict, Callable
+from typing import Any, Callable, Dict
 
 import torch
 import torch.nn as nn
-from torch.optim import Optimizer, Adam
+from torch.optim import Adam, Optimizer
+
 from pytorch_lightning import LightningModule
 
 

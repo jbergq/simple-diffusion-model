@@ -2,8 +2,8 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 from einops import rearrange  # type: ignore
+from torch import Tensor
 
 
 def conv3x3(

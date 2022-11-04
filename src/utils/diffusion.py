@@ -13,9 +13,7 @@ def forward_diffusion(img: U, betas: U) -> U:
     elif isinstance(img, np.ndarray) and isinstance(betas, np.ndarray):
         return forward_diffusion_np(img, betas)
     else:
-        raise ValueError(
-            "`img` and `betas` must be either torch Tensor or numpy ndarray"
-        )
+        raise ValueError("`img` and `betas` must be either torch Tensor or numpy ndarray")
 
 
 def forward_diffusion_np(img: np.ndarray, betas: np.ndarray) -> np.ndarray:
