@@ -17,3 +17,7 @@ dependencies:
   - ca-certificates
   - certifi
   - openssl
+  - einops
+  - flake8
+  - isort
+  - mypy
