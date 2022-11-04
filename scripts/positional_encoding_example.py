@@ -1,4 +1,4 @@
-# %% 
+# %%
 import sys
 from pathlib import Path
 
@@ -36,9 +36,9 @@ for i in range(num_plots):
 # %% Draw positional encoding vectors along x-axis
 
 # Index all elements and create img coords
-i = torch.arange(emb.shape[0] * emb.shape[1])
-xs = torch.div(i, emb.shape[1], rounding_mode="trunc")
-ys = torch.remainder(i, emb.shape[1])
+idxs = torch.arange(emb.shape[0] * emb.shape[1])
+xs = torch.div(idxs, emb.shape[1], rounding_mode="trunc")
+ys = torch.remainder(idxs, emb.shape[1])
 
 # Draw in image according to magnitude
 arr = torch.zeros((num_t_steps, emb_size))

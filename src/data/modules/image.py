@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import Compose, ToTensor, Pad
 from pytorch_lightning import LightningDataModule
 
-from ..datasets.mnist import MNIST
+from src.data.datasets.mnist import MNIST
 
 
 class ImageDataModule(LightningDataModule):

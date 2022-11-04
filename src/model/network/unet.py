@@ -1,8 +1,9 @@
 import torch.nn as nn
+from torch import Tensor
 
-from .layers.conv_block import ConvBlock
-from .layers.resnet_block import ResNetBlock
-from .layers.positional_encoding import PositionalEncoding
+from src.model.network.layers.conv_block import ConvBlock
+from src.model.network.layers.resnet_block import ResNetBlock
+from src.model.network.layers.positional_encoding import PositionalEncoding
 
 
 class UNet(nn.Module):
@@ -18,7 +19,7 @@ class UNet(nn.Module):
         features_start: int = 64,
         t_emb_size: int = 512,
         max_time_steps: int = 1000,
-    ):
+    ) -> None:
         super().__init__()
 
         self.t_embedding = nn.Sequential(
@@ -58,7 +59,7 @@ class UNet(nn.Module):
 
         self.conv_out = nn.Conv2d(feats, out_size, kernel_size=1)
 
-    def forward(self, x, t=None):
+    def forward(self, x: Tensor, t: Tensor = None) -> Tensor:
         if t is not None:
             t_emb = self.t_embedding(t)
 

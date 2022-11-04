@@ -1,10 +1,13 @@
-from typing import Any
+from typing import Union
+
 import numpy as np
 import torch
 from torch import Tensor
 
+U = Union[Tensor, np.ndarray]
 
-def forward_diffusion(img: Any, betas: Any):
+
+def forward_diffusion(img: U, betas: U) -> U:
     if isinstance(img, Tensor) and isinstance(betas, Tensor):
         return forward_diffusion_torch(img, betas)
     elif isinstance(img, np.ndarray) and isinstance(betas, np.ndarray):
@@ -15,7 +18,7 @@ def forward_diffusion(img: Any, betas: Any):
         )
 
 
-def forward_diffusion_np(img: np.ndarray, betas: np.ndarray):
+def forward_diffusion_np(img: np.ndarray, betas: np.ndarray) -> np.ndarray:
     """Applies forward diffusion to the input.
 
     Number of iterations is determined by length of `betas`.
@@ -33,7 +36,7 @@ def forward_diffusion_np(img: np.ndarray, betas: np.ndarray):
     return img_d
 
 
-def forward_diffusion_torch(img: Tensor, betas: Tensor):
+def forward_diffusion_torch(img: Tensor, betas: Tensor) -> Tensor:
     """Applies forward diffusion to the input.
 
     Number of iterations is determined by length of `betas`.

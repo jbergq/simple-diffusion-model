@@ -1,4 +1,5 @@
 import torch.nn as nn
+from torch import Tensor
 
 
 class ConvBlock(nn.Module):
@@ -9,7 +10,7 @@ class ConvBlock(nn.Module):
         self.bn = nn.BatchNorm2d(out_size)
         self.act = act(inplace=True)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         x = self.conv(x)
         x = self.bn(x)
         x = self.act(x)
