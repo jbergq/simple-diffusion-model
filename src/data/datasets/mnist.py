@@ -1,6 +1,6 @@
 from typing import Dict
 
-from torchvision.datasets import MNIST as _MNIST  # type: ignore
+from torchvision.datasets import MNIST as _MNIST
 
 
 class MNIST(_MNIST):

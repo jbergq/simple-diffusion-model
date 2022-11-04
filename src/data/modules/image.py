@@ -1,3 +1,5 @@
+from typing import Optional
+
 from omegaconf import DictConfig
 from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import Compose, Pad, ToTensor
@@ -13,7 +15,7 @@ class ImageDataModule(LightningDataModule):
         self.data_dir = data_dir
         self.data_loader_cfg = data_loaders
 
-    def setup(self, stage: str) -> None:
+    def setup(self, stage: Optional[str] = None) -> None:
         mnist_full = MNIST(
             self.data_dir,
             train=True,

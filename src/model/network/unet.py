@@ -40,9 +40,7 @@ class UNet(nn.Module):
         feats = features_start
         layers = []
         for _ in range(num_layers - 1):
-            layers.append(
-                ResNetBlock(feats, feats * 2, t_dim=t_emb_size, downsample=True)
-            )
+            layers.append(ResNetBlock(feats, feats * 2, t_dim=t_emb_size, downsample=True))
             feats *= 2
         for _ in range(num_layers - 1):
             layers.append(

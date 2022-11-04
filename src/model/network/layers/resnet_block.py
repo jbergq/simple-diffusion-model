@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Callable, Optional
 
 import torch
 import torch.nn as nn
-from einops import rearrange  # type: ignore
+from einops import rearrange
 from torch import Tensor
 
 
@@ -39,12 +39,15 @@ class ResNetBlock(nn.Module):
         in_size: int,
         out_size: int,
         t_dim: Optional[int] = None,
-        activation: Optional[nn.Module] = nn.SiLU,
+        activation: Callable = nn.SiLU,
         downsample: Optional[bool] = False,
         upsample: Optional[bool] = False,
         skip_size: Optional[int] = None,
     ) -> None:
         super().__init__()
+
+        if upsample:
+            assert skip_size is not None, "`skip_size` cannot be None for upsampling blocks."
 
         self.act = activation(inplace=False)
 
@@ -57,13 +60,9 @@ class ResNetBlock(nn.Module):
         conv1_in_size = in_size + skip_size if upsample else in_size
 
         if downsample:
-            self.ds_skip = nn.Sequential(
-                conv1x1(in_size, out_size, conv1_stride), nn.BatchNorm2d(out_size)
-            )
+            self.ds_skip = nn.Sequential(conv1x1(in_size, out_size, conv1_stride), nn.BatchNorm2d(out_size))
         if upsample:
-            self.us_skip = nn.Sequential(
-                nn.Upsample(scale_factor=2), conv1x1(in_size, out_size)
-            )
+            self.us_skip = nn.Sequential(nn.Upsample(scale_factor=2), conv1x1(in_size, out_size))
             self.us_hidden = nn.Upsample(scale_factor=2)
 
         self.conv1 = conv3x3(conv1_in_size, out_size, conv1_stride)
@@ -96,7 +95,7 @@ class ResNetBlock(nn.Module):
         x = self.act(x)
 
         # Inject positional encoding in hidden state.
-        if t_emb is not None:
+        if t_emb is not None and self.t_proj is not None:
             t_emb = self.t_proj(t_emb)
             x = rearrange(t_emb, "b c -> b c 1 1") + x
 
