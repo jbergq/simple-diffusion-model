@@ -10,11 +10,11 @@ run:
 push:
 	docker push $(IMAGE_URI)
 check:
-	flake8 train.py test.py src
-	mypy train.py test.py src
+	flake8 .
+	mypy .
 format:
-	black train.py test.py src
-	isort train.py test.py src
+	black .
+	isort .
 env-create:
 	mamba create --name $(PROJECT_ID) python=3.8
 env-install:

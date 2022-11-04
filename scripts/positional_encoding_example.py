@@ -9,7 +9,7 @@ import torch
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from src.model.network.layers.positional_encoding import PositionalEncoding
-from src.model.network.layers.resnet_block import ResNetBlock
+from src.model.network.layers.resnet_block import ResNetBlock, ResNetBlockDown, ResNetBlockUp
 
 # Get time steps
 num_t_steps = 100
@@ -56,23 +56,3 @@ divider = make_axes_locatable(ax)
 cax = divider.append_axes("right", size="5%", pad=0.05)
 plt.colorbar(im, cax=cax)
 plt.show()
-
-# %% Inject into ResNet block
-
-inp = torch.normal(0, 1, (1, 128, 256, 256))
-t = torch.tensor([100])
-
-emb = pos_enc(t)
-resnet_block = ResNetBlock(128, 128, t_emb_dim=emb_size)
-resnet_block_ds = ResNetBlock(128, 256, t_emb_dim=emb_size, downsample=True)
-resnet_block_us = ResNetBlock(128, 64, t_emb_dim=emb_size, upsample=True)
-
-out1 = resnet_block(inp, emb)
-out2 = resnet_block_ds(inp, emb)
-out3 = resnet_block_us(inp, emb)
-
-print(out1.shape)
-print(out2.shape)
-print(out3.shape)
-
-# %%
