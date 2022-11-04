@@ -66,9 +66,7 @@ for i, x_t in enumerate(x_ts):
 # %% Create animated GIF
 
 plot_paths = list(plot_dir.glob("*.png"))
-plot_paths = sorted(
-    plot_paths, key=lambda path: int(re.search(r"(?<=plot_).*", path.stem).group(0))
-)
+plot_paths = sorted(plot_paths, key=lambda path: int(re.search(r"(?<=plot_).*", path.stem).group(0)))
 
 plot_imgs = []
 

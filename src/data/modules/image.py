@@ -16,12 +16,7 @@ class ImageDataModule(LightningDataModule):
         self.data_loader_cfg = data_loaders
 
     def setup(self, stage: Optional[str] = None) -> None:
-        mnist_full = MNIST(
-            self.data_dir,
-            train=True,
-            transform=Compose([Pad(2), ToTensor()]),
-            download=True,
-        )
+        mnist_full = MNIST(self.data_dir, train=True, transform=Compose([Pad(2), ToTensor()]), download=True)
         self.mnist_train, self.mnist_val = random_split(mnist_full, [55000, 5000])
 
     def train_dataloader(self) -> DataLoader:
