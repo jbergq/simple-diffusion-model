@@ -2,7 +2,7 @@ defaults:
   - _self_
 
 model:
-  _target_: src.model.modules.diffusion.DiffusionModule
+  _target_: src.model.modules.diffusion_module.DiffusionModule
   network:
     _target_: src.model.network.unet.UNet
     in_size: 1

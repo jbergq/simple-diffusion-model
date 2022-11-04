@@ -3,7 +3,7 @@ from torch import Tensor
 
 from src.model.network.layers.conv_block import ConvBlock
 from src.model.network.layers.positional_encoding import PositionalEncoding
-from src.model.network.layers.resnet_block import ResNetBlock
+from src.model.network.layers.resnet_block import ResNetBlockUp, ResNetBlockDown
 
 
 class UNet(nn.Module):
@@ -23,35 +23,23 @@ class UNet(nn.Module):
         super().__init__()
 
         self.t_embedding = nn.Sequential(
-            PositionalEncoding(max_time_steps, t_emb_size),
-            nn.Linear(t_emb_size, t_emb_size),
+            PositionalEncoding(max_time_steps, t_emb_size), nn.Linear(t_emb_size, t_emb_size)
         )
 
         if num_layers < 1:
             raise ValueError(f"num_layers = {num_layers}, expected: num_layers > 0")
         self.num_layers = num_layers
 
-        self.conv_in = nn.Sequential(
-            ConvBlock(in_size, features_start),
-            ConvBlock(features_start, features_start),
-        )
+        self.conv_in = nn.Sequential(ConvBlock(in_size, features_start), ConvBlock(features_start, features_start))
 
         # Encoder-decoder
         feats = features_start
         layers = []
         for _ in range(num_layers - 1):
-            layers.append(ResNetBlock(feats, feats * 2, t_dim=t_emb_size, downsample=True))
+            layers.append(ResNetBlockDown(feats, feats * 2, t_dim=t_emb_size))
             feats *= 2
         for _ in range(num_layers - 1):
-            layers.append(
-                ResNetBlock(
-                    feats,
-                    feats // 2,
-                    t_dim=t_emb_size,
-                    upsample=True,
-                    skip_size=feats // 2,
-                )
-            )
+            layers.append(ResNetBlockUp(feats, feats // 2, t_dim=t_emb_size, skip_size=feats // 2))
             feats //= 2
         self.layers = nn.ModuleList(layers)
 

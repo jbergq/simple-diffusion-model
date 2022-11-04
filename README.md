@@ -40,12 +40,7 @@ class ResNetBlock(nn.Module):
     """ResNet block with injection of positional encoding."""
 
     def __init__(
-        self,
-        in_size: int,
-        out_size: int,
-        t_dim: Optional[int] = None,
-        activation: Optional[nn.Module] = nn.SiLU,
-        ... # Omitting details
+        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU, stride: int = 1
     ) -> None:
         super().__init__()
 
@@ -56,12 +51,21 @@ class ResNetBlock(nn.Module):
         else:
             self.t_proj = None
 
-        ... # Omitting details
+        self.conv1 = conv3x3(in_size, out_size, stride=stride)
+        self.bn1 = nn.BatchNorm2d(out_size)
+        self.conv2 = conv3x3(out_size, out_size)
+        self.bn2 = nn.BatchNorm2d(out_size)
 
-    def forward(self, x: Tensor, x_enc: Tensor = None, t_emb: Tensor = None) -> Tensor:
+        if in_size != out_size:
+            self.skip_conv = nn.Sequential(conv1x1(in_size, out_size, stride), nn.BatchNorm2d(out_size))
+        else:
+            self.skip_conv = None
+
+    def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
         x_skip = x
 
-        ... # Omitting details
+        if self.skip_conv is not None:
+            x_skip = self.skip_conv(x_skip)
 
         # First hidden layer.
         x = self.conv1(x)
@@ -69,7 +73,7 @@ class ResNetBlock(nn.Module):
         x = self.act(x)
 
         # Inject positional encoding in hidden state.
-        if t_emb is not None:
+        if t_emb is not None and self.t_proj is not None:
             t_emb = self.t_proj(t_emb)
             x = rearrange(t_emb, "b c -> b c 1 1") + x
 

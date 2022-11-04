@@ -31,23 +31,53 @@ def conv1x1(in_size: int, out_size: int, stride: int = 1) -> nn.Conv2d:
     return nn.Conv2d(in_size, out_size, kernel_size=1, stride=stride, bias=False)
 
 
-class ResNetBlock(nn.Module):
-    """ResNet block with injection of positional encoding."""
-
+class ResNetBlockUp(nn.Module):
     def __init__(
         self,
         in_size: int,
         out_size: int,
         t_dim: Optional[int] = None,
         activation: Callable = nn.SiLU,
-        downsample: Optional[bool] = False,
-        upsample: Optional[bool] = False,
         skip_size: Optional[int] = None,
     ) -> None:
         super().__init__()
 
-        if upsample:
-            assert skip_size is not None, "`skip_size` cannot be None for upsampling blocks."
+        self.up = nn.Upsample(scale_factor=2)
+        self.block = ResNetBlock(in_size + skip_size, out_size, t_dim, activation)
+
+    def forward(self, x: Tensor, x_enc: Tensor = None, t_emb: Tensor = None) -> Tensor:
+        x = self.up(x)
+
+        # Concatenate with encoder features.
+        if x_enc is not None:
+            x = torch.cat([x, x_enc], dim=1)
+
+        out = self.block(x, t_emb)
+
+        return out
+
+
+class ResNetBlockDown(nn.Module):
+    def __init__(
+        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU
+    ) -> None:
+        super().__init__()
+
+        self.block = ResNetBlock(in_size, out_size, t_dim, activation, stride=2)
+
+    def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
+        out = self.block(x, t_emb)
+
+        return out
+
+
+class ResNetBlock(nn.Module):
+    """ResNet block with injection of positional encoding."""
+
+    def __init__(
+        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU, stride: int = 1
+    ) -> None:
+        super().__init__()
 
         self.act = activation(inplace=False)
 
@@ -56,38 +86,21 @@ class ResNetBlock(nn.Module):
         else:
             self.t_proj = None
 
-        conv1_stride = 2 if downsample else 1
-        conv1_in_size = in_size + skip_size if upsample else in_size
-
-        if downsample:
-            self.ds_skip = nn.Sequential(conv1x1(in_size, out_size, conv1_stride), nn.BatchNorm2d(out_size))
-        if upsample:
-            self.us_skip = nn.Sequential(nn.Upsample(scale_factor=2), conv1x1(in_size, out_size))
-            self.us_hidden = nn.Upsample(scale_factor=2)
-
-        self.conv1 = conv3x3(conv1_in_size, out_size, conv1_stride)
+        self.conv1 = conv3x3(in_size, out_size, stride=stride)
         self.bn1 = nn.BatchNorm2d(out_size)
         self.conv2 = conv3x3(out_size, out_size)
         self.bn2 = nn.BatchNorm2d(out_size)
 
-        self.downsample = downsample
-        self.upsample = upsample
+        if in_size != out_size:
+            self.skip_conv = nn.Sequential(conv1x1(in_size, out_size, stride), nn.BatchNorm2d(out_size))
+        else:
+            self.skip_conv = None
 
-    def forward(self, x: Tensor, x_enc: Tensor = None, t_emb: Tensor = None) -> Tensor:
+    def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
         x_skip = x
 
-        # TODO(jonathanb): Move down/upsample out of block?
-
-        # Down/upsample.
-        if self.downsample:
-            x_skip = self.ds_skip(x_skip)
-        if self.upsample:
-            x_skip = self.us_skip(x_skip)
-            x = self.us_hidden(x)
-
-        # Concatenate with encoder features.
-        if x_enc is not None:
-            x = torch.cat([x, x_enc], dim=1)
+        if self.skip_conv is not None:
+            x_skip = self.skip_conv(x_skip)
 
         # First hidden layer.
         x = self.conv1(x)
