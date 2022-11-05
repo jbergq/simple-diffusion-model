@@ -5,7 +5,6 @@ import torch.nn as nn
 import wandb
 from pytorch_lightning import LightningModule
 from torch.optim import Adam, Optimizer
-from torchvision.utils import make_grid
 
 
 class DiffusionModule(LightningModule):
@@ -24,6 +23,8 @@ class DiffusionModule(LightningModule):
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
 
+        self.save_hyperparameters()
+
     def training_step(self, batch: Dict, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         imgs = batch["img"]
         num_imgs = imgs.shape[0]
@@ -39,6 +40,8 @@ class DiffusionModule(LightningModule):
         noise_pred = self.network(imgs_d, ts)
 
         loss = self.loss(noise_pred, noise)
+
+        self.log("train/loss", loss)
 
         return {"loss": loss}
 
