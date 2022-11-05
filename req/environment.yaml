@@ -21,3 +21,4 @@ dependencies:
   - flake8
   - isort
   - mypy
+  - wandb

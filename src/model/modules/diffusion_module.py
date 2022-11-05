@@ -2,8 +2,10 @@ from typing import Any, Callable, Dict
 
 import torch
 import torch.nn as nn
+import wandb
 from pytorch_lightning import LightningModule
 from torch.optim import Adam, Optimizer
+from torchvision.utils import make_grid
 
 
 class DiffusionModule(LightningModule):
@@ -60,6 +62,9 @@ class DiffusionModule(LightningModule):
 
             x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
             x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
+
+        wandb.log({"Real images": wandb.Image(imgs)})
+        wandb.log({"Generated images": wandb.Image(x)})
 
     def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)

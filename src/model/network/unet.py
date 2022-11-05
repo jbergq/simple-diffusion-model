@@ -58,7 +58,7 @@ class UNet(nn.Module):
 
         # Decoder
         for i, layer in enumerate(self.layers[self.num_layers - 1 :]):
-            x_i[-1] = layer(x=x_i[-1], x_enc=x_i[-2 - i], t_emb=t_emb)
+            x_i[-1] = layer(x=x_i[-1], x_skip=x_i[-2 - i], t_emb=t_emb)
 
         out = self.conv_out(x_i[-1])
 
