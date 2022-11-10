@@ -32,13 +32,13 @@ class UNet(nn.Module):
 
         self.conv_in = nn.Sequential(ConvBlock(in_size, features_start), ConvBlock(features_start, features_start))
 
-        # Encoder-decoder
-        feats = features_start
+        # Create encoder and decoder stages.
         layers = []
-        for _ in range(num_layers - 1):
+        feats = features_start
+        for _ in range(num_layers - 1):  # Encoder
             layers.append(ResNetBlockDown(feats, feats * 2, t_dim=t_emb_size))
             feats *= 2
-        for _ in range(num_layers - 1):
+        for _ in range(num_layers - 1):  # Decoder
             layers.append(ResNetBlockUp(feats, feats // 2, skip_size=feats // 2, t_dim=t_emb_size))
             feats //= 2
         self.layers = nn.ModuleList(layers)
@@ -47,16 +47,19 @@ class UNet(nn.Module):
 
     def forward(self, x: Tensor, t: Tensor = None) -> Tensor:
         if t is not None:
+            # Create time embedding using positional encoding.
             t_emb = self.t_embedding(t)
 
         x = self.conv_in(x)
+
+        # Store hidden states for U-net skip connections.
         x_i = [x]
 
-        # Encoder
+        # Encoder stage.
         for layer in self.layers[: self.num_layers - 1]:
             x_i.append(layer(x=x_i[-1], t_emb=t_emb))
 
-        # Decoder
+        # Decoder stage.
         for i, layer in enumerate(self.layers[self.num_layers - 1 :]):
             x_i[-1] = layer(x=x_i[-1], x_skip=x_i[-2 - i], t_emb=t_emb)
 
