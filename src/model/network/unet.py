@@ -36,10 +36,10 @@ class UNet(nn.Module):
         layers = []
         feats = features_start
         for _ in range(num_layers - 1):  # Encoder
-            layers.append(ResNetBlockDown(feats, feats * 2, t_dim=t_emb_size))
+            layers.append(ResNetBlockDown(feats, feats * 2, t_size=t_emb_size))
             feats *= 2
         for _ in range(num_layers - 1):  # Decoder
-            layers.append(ResNetBlockUp(feats, feats // 2, skip_size=feats // 2, t_dim=t_emb_size))
+            layers.append(ResNetBlockUp(feats, feats // 2, skip_size=feats // 2, t_size=t_emb_size))
             feats //= 2
         self.layers = nn.ModuleList(layers)
 

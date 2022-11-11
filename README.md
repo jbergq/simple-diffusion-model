@@ -37,14 +37,14 @@ class ResNetBlock(nn.Module):
     """ResNet block with injection of positional encoding."""
 
     def __init__(
-        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU, stride: int = 1
+        self, in_size: int, out_size: int, t_size: Optional[int] = None, activation: Callable = nn.SiLU, stride: int = 1
     ) -> None:
         super().__init__()
 
         self.act = activation(inplace=False)
 
-        if t_dim is not None:
-            self.t_proj = nn.Sequential(self.act, nn.Linear(t_dim, out_size))
+        if t_size is not None:
+            self.t_proj = nn.Sequential(self.act, nn.Linear(t_size, out_size))
         else:
             self.t_proj = None
 

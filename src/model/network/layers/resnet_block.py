@@ -37,13 +37,13 @@ class ResNetBlockUp(nn.Module):
         in_size: int,
         out_size: int,
         skip_size: int,
-        t_dim: Optional[int] = None,
+        t_size: Optional[int] = None,
         activation: Callable = nn.SiLU,
     ) -> None:
         super().__init__()
 
         self.up = nn.Upsample(scale_factor=2)
-        self.block = ResNetBlock(in_size + skip_size, out_size, t_dim, activation)
+        self.block = ResNetBlock(in_size + skip_size, out_size, t_size, activation)
 
     def forward(self, x: Tensor, x_skip: Tensor = None, t_emb: Tensor = None) -> Tensor:
         x = self.up(x)
@@ -59,11 +59,11 @@ class ResNetBlockUp(nn.Module):
 
 class ResNetBlockDown(nn.Module):
     def __init__(
-        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU
+        self, in_size: int, out_size: int, t_size: Optional[int] = None, activation: Callable = nn.SiLU
     ) -> None:
         super().__init__()
 
-        self.block = ResNetBlock(in_size, out_size, t_dim, activation, stride=2)
+        self.block = ResNetBlock(in_size, out_size, t_size, activation, stride=2)
 
     def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
         out = self.block(x, t_emb)
@@ -72,16 +72,24 @@ class ResNetBlockDown(nn.Module):
 
 
 class ResNetBlock(nn.Module):
-    """ResNet block with injection of positional encoding."""
+    """ResNet block with injection of positional encoding.
+
+    Args:
+        in_size (int): Size of input feature map.
+        out_size (int): Size of output feature map.
+        activation (Callable, optional): Activation function. Defaults to nn.SiLU.
+        stride (int): Stride of first convolutional layer (and skip convolution if in_size != out_size).
+        t_size (int): Size of time positional embedding.
+    """
 
     def __init__(
-        self, in_size: int, out_size: int, t_dim: Optional[int] = None, activation: Callable = nn.SiLU, stride: int = 1
+        self, in_size: int, out_size: int, activation: Callable = nn.SiLU, stride: int = 1, t_size: Optional[int] = None
     ) -> None:
         super().__init__()
 
         self.act = activation(inplace=False)
 
-        self.t_proj = nn.Sequential(self.act, nn.Linear(t_dim, out_size)) if t_dim is not None else None
+        self.t_proj = nn.Sequential(self.act, nn.Linear(t_size, out_size)) if t_size is not None else None
 
         self.conv1 = conv3x3(in_size, out_size, stride=stride)
         self.bn1 = nn.BatchNorm2d(out_size)
