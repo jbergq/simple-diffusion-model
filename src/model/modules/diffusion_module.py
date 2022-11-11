@@ -23,7 +23,7 @@ class DiffusionModule(LightningModule):
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
 
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=["network", "loss"])
 
     def training_step(self, batch: Dict, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         imgs = batch["img"]
@@ -53,7 +53,7 @@ class DiffusionModule(LightningModule):
 
         for t_step in reversed(range(self.t_max)):
             ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
-            alpha = torch.ones((num_imgs,)) * 1 - self.beta
+            alpha = torch.ones((num_imgs,)) - self.beta
             alpha = alpha[:, None, None, None]
 
             if t_step == 0:
