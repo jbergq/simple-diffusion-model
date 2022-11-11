@@ -72,19 +72,20 @@ class ResNetBlockDown(nn.Module):
 
 
 class ResNetBlock(nn.Module):
-    """ResNet block with injection of positional encoding.
-
-    Args:
-        in_size (int): Size of input feature map.
-        out_size (int): Size of output feature map.
-        activation (Callable, optional): Activation function. Defaults to nn.SiLU.
-        stride (int): Stride of first convolutional layer (and skip convolution if in_size != out_size).
-        t_size (int): Size of time positional embedding.
-    """
+    """ResNet block with injection of positional encoding."""
 
     def __init__(
         self, in_size: int, out_size: int, activation: Callable = nn.SiLU, stride: int = 1, t_size: Optional[int] = None
     ) -> None:
+        """Constructs the ResNetBlock.
+
+        Args:
+            in_size (int): Size of input feature map.
+            out_size (int): Size of output feature map.
+            activation (Callable, optional): Activation function. Defaults to nn.SiLU.
+            stride (int): Stride of first convolutional layer (and skip convolution if in_size != out_size).
+            t_size (int): Size of time positional embedding.
+        """
         super().__init__()
 
         self.act = activation(inplace=False)

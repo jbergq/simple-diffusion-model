@@ -5,8 +5,10 @@ from torch import Tensor
 
 
 class ConvBlock(nn.Module):
+    """Simple convolutional block: Conv2D -> BatchNorm -> Activation."""
+
     def __init__(self, in_size: int, out_size: int, activation: Callable = nn.ReLU) -> None:
-        """Simple convolutional block: Conv2D -> BatchNorm -> Activation.
+        """Constructs the ConvBlock.
 
         Args:
             in_size (int): Size of input feature map.

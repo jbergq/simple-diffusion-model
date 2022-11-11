@@ -7,9 +7,7 @@ from src.model.network.layers.resnet_block import ResNetBlockDown, ResNetBlockUp
 
 
 class UNet(nn.Module):
-    """
-    UNet with ResNet blocks and injection of positional encoding.
-    """
+    """UNet with ResNet blocks and injection of positional encoding."""
 
     def __init__(
         self,

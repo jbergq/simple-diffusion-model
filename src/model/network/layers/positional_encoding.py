@@ -4,13 +4,15 @@ from torch import Tensor
 
 
 class PositionalEncoding(nn.Module):
+    """Transformer sinusoidal positional encoding."""
+
     def __init__(self, max_time_steps: int, embedding_size: int, n: int = 10000) -> None:
-        """Transformer sinusoidal positional encoding.
+        """Constructs the PositionalEncoding.
 
         Args:
             max_time_steps (int): Number of timesteps that can be uniquely represented by encoding.
             embedding_size (int): Size of returned time embedding.
-            n (int, optional): _description_. Defaults to 10000.
+            n (int, optional): User-defined scalar. Defaults to 10000.
         """
         super().__init__()
 
