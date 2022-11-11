@@ -20,6 +20,6 @@ env-create:
 env-install:
 	mamba env update --file req/environment.yaml
 env-activate:
-	conda activate $(PROJECT_ID)
+	mamba activate $(PROJECT_ID)
 env-save:
 	conda env export --from-history | grep -v "^prefix: " > req/environment.yaml
