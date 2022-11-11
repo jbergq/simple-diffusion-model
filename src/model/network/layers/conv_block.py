@@ -6,6 +6,13 @@ from torch import Tensor
 
 class ConvBlock(nn.Module):
     def __init__(self, in_size: int, out_size: int, act: Callable = nn.ReLU) -> None:
+        """Simple convolutional block: Conv2D -> BatchNorm -> Activation.
+
+        Args:
+            in_size (int): Size of input feature map.
+            out_size (int): Size of output feature map.
+            act (Callable, optional): Activation function. Defaults to nn.ReLU.
+        """
         super().__init__()
 
         self.conv = nn.Conv2d(in_size, out_size, kernel_size=3, padding=1)
