@@ -24,10 +24,9 @@ class DiffusionModule(LightningModule):
 
         self.network = network
         self.loss = loss
+        self.fid = FrechetInceptionDistance()
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
-
-        self.fid = FrechetInceptionDistance()
 
         self.save_hyperparameters(ignore=["network", "loss"])
 
