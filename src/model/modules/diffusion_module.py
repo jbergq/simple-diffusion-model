@@ -1,10 +1,14 @@
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List, Union
 
 import torch
 import torch.nn as nn
 import wandb
 from pytorch_lightning import LightningModule
+from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 from torch.optim import Adam, Optimizer
+from torchmetrics.image.fid import FrechetInceptionDistance
+
+from src.utils.conversion import to_uint8
 
 
 class DiffusionModule(LightningModule):
@@ -22,6 +26,8 @@ class DiffusionModule(LightningModule):
         self.loss = loss
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
+
+        self.fid = FrechetInceptionDistance()
 
         self.save_hyperparameters(ignore=["network", "loss"])
 
@@ -66,8 +72,21 @@ class DiffusionModule(LightningModule):
             x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
             x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
 
+        # Update FID metric.
+        self.fid.update(to_uint8(imgs), real=True)
+        self.fid.update(to_uint8(x), real=False)
+
+        # Log to WandB.
         wandb.log({"Real images": wandb.Image(imgs)})
         wandb.log({"Generated images": wandb.Image(x)})
+
+    def validation_epoch_end(self, outputs: Union[EPOCH_OUTPUT, List[EPOCH_OUTPUT]]) -> None:
+        # Compute and reset FID metric.
+        fid_value = self.fid.compute()
+        self.fid.reset()
+
+        # Log to WandB.
+        wandb.log({"FID": fid_value})
 
     def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)
