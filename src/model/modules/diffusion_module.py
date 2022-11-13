@@ -5,6 +5,7 @@ import torch.nn as nn
 import wandb
 from pytorch_lightning import LightningModule
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
+from torch import Tensor
 from torch.optim import Adam, Optimizer
 from torchmetrics.image.fid import FrechetInceptionDistance
 
@@ -50,13 +51,17 @@ class DiffusionModule(LightningModule):
         self.log("train/loss", loss)
 
         if self._is_last_batch(batch_idx):
-            # Generate fake images and log.
+            # Generate fake images.
             noise = torch.normal(0, 1, imgs_real.shape)
             imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
 
+            # Rescale images to [0, 255] uint8.
+            imgs_real = to_image(imgs_real, value_range=(-1.0, 1.0))
+            imgs_fake = to_image(imgs_fake, value_range=(-1.0, 1.0))
+
             # Log to WandB.
-            wandb.log({"train/real images": wandb.Image(imgs_real)})
-            wandb.log({"train/fake images": wandb.Image(imgs_fake)})
+            wandb.log({"train/real images": wandb.Image(imgs_real.float())})
+            wandb.log({"train/fake images": wandb.Image(imgs_fake.float())})
 
         return {"loss": loss}
 
@@ -67,13 +72,17 @@ class DiffusionModule(LightningModule):
         noise = torch.normal(0, 1, imgs_real.shape)
         imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
 
+        # Rescale images to [0, 255] uint8.
+        imgs_real = to_image(imgs_real, value_range=(-1.0, 1.0))
+        imgs_fake = to_image(imgs_fake, value_range=(-1.0, 1.0))
+
         # Update FID metric.
-        self.fid.update(to_image(imgs_real), real=True)
-        self.fid.update(to_image(imgs_fake), real=False)
+        self.fid.update(imgs_real, real=True)
+        self.fid.update(imgs_fake, real=False)
 
         # Log to WandB.
-        wandb.log({"val/real images": wandb.Image(imgs_real)})
-        wandb.log({"val/fake images": wandb.Image(imgs_fake)})
+        wandb.log({"val/real images": wandb.Image(imgs_real.float())})
+        wandb.log({"val/fake images": wandb.Image(imgs_fake.float())})
 
     def validation_epoch_end(self, outputs: Union[EPOCH_OUTPUT, List[EPOCH_OUTPUT]]) -> None:
         # Compute and reset FID metric.
