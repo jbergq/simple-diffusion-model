@@ -8,7 +8,7 @@ from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 from torch.optim import Adam, Optimizer
 from torchmetrics.image.fid import FrechetInceptionDistance
 
-from src.utils.conversion import to_uint8
+from src.utils.conversion import to_image
 
 
 class DiffusionModule(LightningModule):
@@ -72,8 +72,8 @@ class DiffusionModule(LightningModule):
             x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
 
         # Update FID metric.
-        self.fid.update(to_uint8(imgs), real=True)
-        self.fid.update(to_uint8(x), real=False)
+        self.fid.update(to_image(imgs), real=True)
+        self.fid.update(to_image(x), real=False)
 
         # Log to WandB.
         wandb.log({"Real images": wandb.Image(imgs)})
