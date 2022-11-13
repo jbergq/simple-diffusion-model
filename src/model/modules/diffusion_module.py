@@ -95,18 +95,20 @@ class DiffusionModule(LightningModule):
     def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)
 
-    def _reverse_diffusion(self, noise: Dict, shape: Tuple):
+    def _reverse_diffusion(self, noise: Tensor, shape: Tuple):
         num_imgs = shape[0]
 
         # Begin reverse diffusion process.
         x = noise
 
+        alpha = torch.ones((num_imgs,)) - self.beta
+        alpha = alpha[:, None, None, None]
+        alpha_hat = alpha.clone()
+
         with torch.no_grad():
             for t_step in reversed(range(self.t_max)):
-                # Create time step tensor given to model's positional encoding.
+                # Create time step tensor injected using model's positional encoding.
                 ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
-                alpha = torch.ones((num_imgs,)) - self.beta
-                alpha = alpha[:, None, None, None]
 
                 # Predict noise for this time step.
                 noise_pred = self.network(x, ts)
@@ -118,7 +120,9 @@ class DiffusionModule(LightningModule):
                     z = torch.normal(0, 1, shape)
 
                 # Compute denoised image for this time step.
-                x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
-                x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
+                x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha_hat) * noise_pred
+                x = 1 / torch.sqrt(alpha) * x_sub + self.beta ** 2 * z
+
+                alpha_hat *= alpha
 
         return x
