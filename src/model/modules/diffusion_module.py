@@ -29,6 +29,9 @@ class DiffusionModule(LightningModule):
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
         self.save_hyperparameters(ignore=["network", "loss"])
 
+    def _is_last_batch(self, batch_idx: int):
+        return batch_idx == self.trainer.num_training_batches - 1
+
     def training_step(self, batch: Dict, batch_idx: int, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         imgs_real = batch["img"]
         num_imgs = imgs_real.shape[0]
@@ -46,6 +49,15 @@ class DiffusionModule(LightningModule):
         loss = self.loss(noise_pred, noise)
         self.log("train/loss", loss)
 
+        if self._is_last_batch(batch_idx):
+            # Generate fake images and log.
+            noise = torch.normal(0, 1, imgs_real.shape)
+            imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
+
+            # Log to WandB.
+            wandb.log({"train/real images": wandb.Image(imgs_real)})
+            wandb.log({"train/fake images": wandb.Image(imgs_fake)})
+
         return {"loss": loss}
 
     def validation_step(self, batch: Any, *args: Any, **kwargs: Any) -> None:
@@ -60,8 +72,8 @@ class DiffusionModule(LightningModule):
         self.fid.update(to_image(imgs_fake), real=False)
 
         # Log to WandB.
-        wandb.log({"Real images": wandb.Image(imgs_real)})
-        wandb.log({"Fake images": wandb.Image(imgs_fake)})
+        wandb.log({"val/real images": wandb.Image(imgs_real)})
+        wandb.log({"val/fake images": wandb.Image(imgs_fake)})
 
     def validation_epoch_end(self, outputs: Union[EPOCH_OUTPUT, List[EPOCH_OUTPUT]]) -> None:
         # Compute and reset FID metric.
@@ -69,7 +81,7 @@ class DiffusionModule(LightningModule):
         self.fid.reset()
 
         # Log to WandB.
-        wandb.log({"FID": fid_value})
+        wandb.log({"val/fid": fid_value})
 
     def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)
