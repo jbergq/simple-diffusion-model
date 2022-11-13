@@ -43,7 +43,7 @@ class ResNetBlockUp(nn.Module):
         super().__init__()
 
         self.up = nn.Upsample(scale_factor=2)
-        self.block = ResNetBlock(in_size + skip_size, out_size, t_size, activation)
+        self.block = ResNetBlock(in_size + skip_size, out_size, activation, t_size=t_size)
 
     def forward(self, x: Tensor, x_skip: Tensor = None, t_emb: Tensor = None) -> Tensor:
         x = self.up(x)
@@ -63,7 +63,7 @@ class ResNetBlockDown(nn.Module):
     ) -> None:
         super().__init__()
 
-        self.block = ResNetBlock(in_size, out_size, t_size, activation, stride=2)
+        self.block = ResNetBlock(in_size, out_size, activation, stride=2, t_size=t_size)
 
     def forward(self, x: Tensor, t_emb: Tensor = None) -> Tensor:
         out = self.block(x, t_emb)
