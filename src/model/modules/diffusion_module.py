@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -27,57 +27,41 @@ class DiffusionModule(LightningModule):
         self.fid = FrechetInceptionDistance()
 
         self.t_min, self.t_max, self.beta = t_min, t_max, beta
-
         self.save_hyperparameters(ignore=["network", "loss"])
 
-    def training_step(self, batch: Dict, *args: Any, **kwargs: Any) -> Dict[str, Any]:
-        imgs = batch["img"]
-        num_imgs = imgs.shape[0]
+    def training_step(self, batch: Dict, batch_idx: int, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+        imgs_real = batch["img"]
+        num_imgs = imgs_real.shape[0]
 
+        # Sample random number of iterations to apply noise for in forward diffusion.
         ts = torch.randint(self.t_min, self.t_max, (num_imgs,))
         alpha_hat = (1 - self.beta) ** ts
         alpha_hat = alpha_hat[:, None, None, None]
-        noise = torch.normal(0, 1, imgs.shape)
 
         # Apply noise to images (N steps forward diffusion in closed form).
-        imgs_d = torch.sqrt(alpha_hat) * imgs + torch.sqrt(1 - alpha_hat) * noise
-
-        noise_pred = self.network(imgs_d, ts)
+        noise = torch.normal(0, 1, imgs_real.shape)
+        imgs_noisy = torch.sqrt(alpha_hat) * imgs_real + torch.sqrt(1 - alpha_hat) * noise
+        noise_pred = self.network(imgs_noisy, ts)
 
         loss = self.loss(noise_pred, noise)
-
         self.log("train/loss", loss)
 
         return {"loss": loss}
 
     def validation_step(self, batch: Any, *args: Any, **kwargs: Any) -> None:
-        imgs = batch["img"]
-        num_imgs = imgs.shape[0]
+        imgs_real = batch["img"]
 
-        x = torch.normal(0, 1, imgs.shape)
-
-        for t_step in reversed(range(self.t_max)):
-            ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
-            alpha = torch.ones((num_imgs,)) - self.beta
-            alpha = alpha[:, None, None, None]
-
-            if t_step == 0:
-                z = torch.zeros(imgs.shape)
-            else:
-                z = torch.normal(0, 1, imgs.shape)
-
-            noise_pred = self.network(x, ts)
-
-            x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
-            x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
+        # Generate fake images.
+        noise = torch.normal(0, 1, imgs_real.shape)
+        imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
 
         # Update FID metric.
-        self.fid.update(to_image(imgs), real=True)
-        self.fid.update(to_image(x), real=False)
+        self.fid.update(to_image(imgs_real), real=True)
+        self.fid.update(to_image(imgs_fake), real=False)
 
         # Log to WandB.
-        wandb.log({"Real images": wandb.Image(imgs)})
-        wandb.log({"Generated images": wandb.Image(x)})
+        wandb.log({"Real images": wandb.Image(imgs_real)})
+        wandb.log({"Fake images": wandb.Image(imgs_fake)})
 
     def validation_epoch_end(self, outputs: Union[EPOCH_OUTPUT, List[EPOCH_OUTPUT]]) -> None:
         # Compute and reset FID metric.
@@ -89,3 +73,31 @@ class DiffusionModule(LightningModule):
 
     def configure_optimizers(self) -> Optimizer:
         return Adam(self.network.parameters(), lr=1e-3)
+
+    def _reverse_diffusion(self, noise: Dict, shape: Tuple):
+        num_imgs = shape[0]
+
+        # Begin reverse diffusion process.
+        x = noise
+
+        with torch.no_grad():
+            for t_step in reversed(range(self.t_max)):
+                # Create time step tensor given to model's positional encoding.
+                ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
+                alpha = torch.ones((num_imgs,)) - self.beta
+                alpha = alpha[:, None, None, None]
+
+                # Predict noise for this time step.
+                noise_pred = self.network(x, ts)
+
+                # Sample noise to add back for stability.
+                if t_step == 0:
+                    z = torch.zeros(shape)
+                else:
+                    z = torch.normal(0, 1, shape)
+
+                # Compute denoised image for this time step.
+                x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha) * noise_pred
+                x = 1 / torch.sqrt(alpha) * x_sub + z * self.beta ** 2
+
+        return x
