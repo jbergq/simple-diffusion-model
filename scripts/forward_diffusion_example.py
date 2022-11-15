@@ -10,10 +10,11 @@ import cv2
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from torchvision.transforms import PILToTensor
 
-from src.data.datasets.mnist import MNIST
 from src.utils.diffusion import forward_diffusion
+from src.data.datasets.mnist import MNIST
 
 
 dataset = MNIST("../data", train=True, download=True, transform=PILToTensor())
@@ -90,11 +91,11 @@ imageio.mimsave(
 #
 # Because sum of normal distr. variables is also norm dist., can express x_t in terms of x_0.
 
-x_t_hat = forward_diffusion(x, beta_t)
+x_t_hat = forward_diffusion(torch.tensor(x), torch.tensor(beta_t))
 
 fig, axs = plt.subplots(2)
 
-axs[0].imshow(x_t_hat, cmap="gray")
+axs[0].imshow(x_t_hat.permute(1, 2, 0), cmap="gray")
 axs[1].hist(x_t_hat.flatten() * 255, bins=255)
 
 plt.show()

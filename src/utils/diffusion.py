@@ -26,12 +26,13 @@ def forward_diffusion_np(img: np.ndarray, betas: np.ndarray) -> np.ndarray:
 
     alphas = 1 - betas
     alpha_hat = np.prod(alphas)
-    i_mat = np.identity(img.shape[-1])
+    alpha_hat = alpha_hat[..., None, None, None]
 
     # Apply forward diffusion process in closed form.
-    img_d = np.random.normal(np.sqrt(alpha_hat) * img, np.sqrt(1 - alpha_hat) * i_mat)
+    noise = np.random.normal(0, 1, img.shape)
+    imgs_noisy = np.sqrt(alpha_hat) * img + np.sqrt(1 - alpha_hat) * noise
 
-    return img_d
+    return imgs_noisy
 
 
 def forward_diffusion_torch(img: Tensor, betas: Tensor) -> Tensor:
@@ -44,9 +45,10 @@ def forward_diffusion_torch(img: Tensor, betas: Tensor) -> Tensor:
 
     alphas = 1 - betas
     alpha_hat = torch.prod(alphas)
-    i_mat = torch.eye(img.shape[-1])
+    alpha_hat = alpha_hat[..., None, None, None]
 
     # Apply forward diffusion process in closed form.
-    img_d = torch.normal(torch.sqrt(alpha_hat) * img, torch.sqrt(1 - alpha_hat) * i_mat)
+    noise = torch.normal(0, 1, img.shape)
+    imgs_noisy = torch.sqrt(alpha_hat) * img + torch.sqrt(1 - alpha_hat) * noise
 
-    return img_d
+    return imgs_noisy
