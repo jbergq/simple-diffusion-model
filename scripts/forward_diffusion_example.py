@@ -28,9 +28,10 @@ x_t = x
 
 # %%
 
-num_iters = 20
-beta_t = np.ones((num_iters)) * 0.05
+num_iters = 300
+beta_t = np.ones((num_iters)) * 0.005
 
+# Forward diffusion process.
 x_ts = [x_t]
 
 for i in range(num_iters):
@@ -45,13 +46,18 @@ plot_dir.mkdir(exist_ok=True)
 
 # matplotlib.use("Agg")
 
-for i, x_t in enumerate(x_ts):
+for t_step, x_t in enumerate(x_ts):
     fig, axs = plt.subplots(2)
 
-    axs[0].imshow(x_t, cmap="gray")
-    axs[1].hist(x_t.flatten() * 255, bins=255)
+    fig.suptitle(f"Timestep: {t_step}", fontsize=12)
 
-    fig.savefig(plot_dir / f"plot_{i}.png")
+    axs[0].imshow(x_t[None, :, :].transpose(1, 2, 0), cmap="gray")
+    axs[1].hist(x_t.flatten(), bins=255, range=(-3, 3))
+    axs[1].set_ylim([0, 30])
+    axs[1].set_xlabel("Pixel value")
+    axs[1].set_ylabel("Counts")
+
+    fig.savefig(plot_dir / f"plot_{t_step}.png")
 
 # %% Create animated GIF
 
@@ -60,10 +66,15 @@ plot_paths = sorted(plot_paths, key=lambda path: int(re.search(r"(?<=plot_).*", 
 
 plot_imgs = []
 
-for plot_path in plot_paths:
-    plot_imgs.append(cv2.imread(str(plot_path)))
+for i, plot_path in enumerate(plot_paths[:200]):
+    plot_img = cv2.imread(str(plot_path))
 
-imageio.mimsave(out_dir / "forward_diffusion_hist.gif", plot_imgs, duration=0.5)
+    if i == 0:  # Use 30 copies of the first frame
+        plot_imgs.extend([plot_img for _ in range(30)])
+    else:
+        plot_imgs.append(plot_img)
+
+imageio.mimsave(out_dir / "forward_diffusion_hist.gif", plot_imgs, duration=0.05)
 
 # %%
 
