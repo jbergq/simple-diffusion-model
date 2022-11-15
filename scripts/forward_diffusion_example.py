@@ -10,28 +10,20 @@ import cv2
 import imageio
 import matplotlib.pyplot as plt
 import numpy as np
-from torchvision.transforms import ToTensor
+from torchvision.transforms import PILToTensor
 
 from src.data.datasets.mnist import MNIST
 from src.utils.diffusion import forward_diffusion
 
-dataset = MNIST("../data", train=True, download=True, transform=ToTensor())
 
-
-# %% Load example image
-
-data_dir = Path("../data")
-
-img_path = data_dir / "apple-touch-icon-144x144-precomposed.png"
-img = cv2.imread(str(img_path))[:, :, :1]
-img = img / 255
+dataset = MNIST("../data", train=True, download=True, transform=PILToTensor())
 
 # %% Load MNIST image
 
 img = dataset[0]["img"][0]
 
 # %%
-x = img
+x = np.array(img)
 x_t = x
 
 # %%
