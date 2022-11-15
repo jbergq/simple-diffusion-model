@@ -62,6 +62,7 @@ class DiffusionModule(LightningModule):
             # Log to WandB.
             wandb.log({"train/real images": wandb.Image(imgs_real.float())})
             wandb.log({"train/fake images": wandb.Image(imgs_fake.float())})
+            wandb.log({"train/noise images": wandb.Image(imgs_noisy.float())})
 
         return {"loss": loss}
 
