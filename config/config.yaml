@@ -23,12 +23,15 @@ datamodule:
     train:
       batch_size: 8
       shuffle: True
+      num_workers: 8
     val:
       batch_size: 8
       shuffle: False
+      num_workers: 8
     test:
       batch_size: 8
       shuffle: False
+      num_workers: 8
 trainer:
   _target_: pytorch_lightning.Trainer
   max_epochs: 10
