@@ -38,12 +38,12 @@ class DiffusionModule(LightningModule):
         num_imgs = imgs_real.shape[0]
 
         # Sample random number of iterations to apply noise for in forward diffusion.
-        ts = torch.randint(self.t_min, self.t_max, (num_imgs,))
+        ts = torch.randint(self.t_min, self.t_max, (num_imgs,), device=self.device)
         alpha_hat = (1 - self.beta) ** ts
         alpha_hat = alpha_hat[:, None, None, None]
 
         # Apply noise to images (N steps forward diffusion in closed form).
-        noise = torch.normal(0, 1, imgs_real.shape)
+        noise = torch.normal(0, 1, imgs_real.shape, device=self.device)
         imgs_noisy = torch.sqrt(alpha_hat) * imgs_real + torch.sqrt(1 - alpha_hat) * noise
         noise_pred = self.network(imgs_noisy, ts)
 
@@ -52,7 +52,7 @@ class DiffusionModule(LightningModule):
 
         if self._is_last_batch(batch_idx):
             # Generate fake images.
-            noise = torch.normal(0, 1, imgs_real.shape)
+            noise = torch.normal(0, 1, imgs_real.shape, device=self.device)
             imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
 
             # Rescale images to [0, 255] uint8.
@@ -70,7 +70,7 @@ class DiffusionModule(LightningModule):
         imgs_real = batch["img"]
 
         # Generate fake images.
-        noise = torch.normal(0, 1, imgs_real.shape)
+        noise = torch.normal(0, 1, imgs_real.shape, device=self.device)
         imgs_fake = self._reverse_diffusion(noise, imgs_real.shape)
 
         # Rescale images to [0, 255] uint8.
@@ -102,23 +102,23 @@ class DiffusionModule(LightningModule):
         # Begin reverse diffusion process.
         x = noise
 
-        alpha = torch.ones((num_imgs,)) - self.beta
+        alpha = torch.ones((num_imgs,), device=self.device) - self.beta
         alpha = alpha[:, None, None, None]
         alpha_hat = alpha.clone()
 
         with torch.no_grad():
             for t_step in reversed(range(self.t_max)):
                 # Create time step tensor injected using model's positional encoding.
-                ts = torch.ones((num_imgs,), dtype=torch.int64) * t_step
+                ts = torch.ones((num_imgs,), dtype=torch.int64, device=self.device) * t_step
 
                 # Predict noise for this time step.
                 noise_pred = self.network(x, ts)
 
                 # Sample noise to add back for stability.
                 if t_step == 0:
-                    z = torch.zeros(shape)
+                    z = torch.zeros(shape, device=self.device)
                 else:
-                    z = torch.normal(0, 1, shape)
+                    z = torch.normal(0, 1, shape, device=self.device)
 
                 # Compute denoised image for this time step.
                 x_sub = x - (1 - alpha) / torch.sqrt(1 - alpha_hat) * noise_pred

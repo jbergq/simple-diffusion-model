@@ -21,7 +21,7 @@ class PositionalEncoding(nn.Module):
 
         # Pre-compute the embedding vector for each possible time step.
         # Store in 2D tensor indexed by time step `t` along 0th axis, with embedding vectors along 1st axis.
-        self.pos_embeddings = torch.zeros(max_time_steps, embedding_size, requires_grad=False)
+        self.pos_embeddings = torch.zeros(max_time_steps, embedding_size, requires_grad=False).cuda()
         self.pos_embeddings[:, 0::2] = torch.sin(k / (n ** (2 * i / embedding_size)))
         self.pos_embeddings[:, 1::2] = torch.cos(k / (n ** (2 * i / embedding_size)))
 

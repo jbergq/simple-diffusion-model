@@ -11,7 +11,7 @@ dependencies:
   - ipykernel
   - pytorch-lightning
   - lightning-bolts
-  - hydra
+  - hydra-core
   - black
   - torchvision
   - ca-certificates
