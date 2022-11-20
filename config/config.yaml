@@ -1,15 +1,21 @@
 defaults:
   - _self_
 
+global:
+  max_time_steps: 1000
 model:
   _target_: src.model.modules.diffusion_module.DiffusionModule
   network:
     _target_: src.model.network.unet.UNet
     in_size: 1
     out_size: 1
-    num_layers: 3
+    num_layers: 5
+    max_time_steps: ${global.max_time_steps}
+    t_emb_size: 1024
   loss:
     _target_: torch.nn.MSELoss
+  t_max: ${global.max_time_steps}
+  beta: 0.005
 datamodule:
   _target_: src.data.modules.image.ImageDataModule
   data_dir: ${data_dir}
