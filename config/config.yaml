@@ -28,6 +28,9 @@ trainer:
   max_epochs: 10
   fast_dev_run: False
   limit_val_batches: 10
+  accelerator: gpu
+  devices: 1
+  num_sanity_val_steps: 0
 
 work_dir: ${hydra:runtime.cwd}
 data_dir: ${work_dir}/data
