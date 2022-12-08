@@ -15,7 +15,9 @@ model:
   loss:
     _target_: torch.nn.MSELoss
   t_max: ${global.max_time_steps}
-  beta: 0.005
+  beta_scheduler:
+    _target_: src.model.beta_scheduler.BetaScheduler
+    type: linear
 datamodule:
   _target_: src.data.modules.image.ImageDataModule
   data_dir: ${data_dir}
