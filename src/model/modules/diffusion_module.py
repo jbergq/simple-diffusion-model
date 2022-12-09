@@ -1,10 +1,9 @@
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 import wandb
 from pytorch_lightning import LightningModule
-from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 from torch import Tensor
 from torch.optim import Adam, Optimizer
 from torchmetrics.image.fid import FrechetInceptionDistance
@@ -102,7 +101,7 @@ class DiffusionModule(LightningModule):
         wandb.log({"val/real images": wandb.Image(imgs_real.float())})
         wandb.log({"val/fake images": wandb.Image(imgs_fake.float())})
 
-    def validation_epoch_end(self, outputs: Union[EPOCH_OUTPUT, List[EPOCH_OUTPUT]]) -> None:
+    def validation_epoch_end(self, *args: Any, **kwargs: Any) -> None:
         # Compute and reset FID metric.
         fid_value = self.fid.compute()
         self.fid.reset()
