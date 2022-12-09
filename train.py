@@ -1,10 +1,25 @@
 import os
+import collections
+from copy import deepcopy
 
 import hydra
 from hydra.utils import instantiate
 from omegaconf import DictConfig
 from pytorch_lightning import LightningDataModule, LightningModule, Trainer
 from pytorch_lightning.loggers import WandbLogger
+
+
+def flatten(d, parent_key="", sep="."):
+    d = deepcopy(d)
+
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 
 @hydra.main(config_path="config", config_name="config")
@@ -14,7 +29,7 @@ def main(cfg: DictConfig) -> None:
     model: LightningModule = instantiate(cfg.model)
 
     # Initialize logger.
-    wandb_logger = WandbLogger(name=cfg.name, project=os.environ["CONDA_DEFAULT_ENV"])
+    wandb_logger = WandbLogger(name=cfg.name, project=os.environ["CONDA_DEFAULT_ENV"], config=flatten(cfg))
 
     # Initialize trainer.
     trainer: Trainer = instantiate(cfg.trainer, logger=wandb_logger)
