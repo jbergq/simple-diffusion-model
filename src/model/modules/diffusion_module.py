@@ -23,6 +23,8 @@ class DiffusionModule(LightningModule):
         beta_scheduler: Optional[Callable] = None,
     ) -> None:
         super().__init__()
+        
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.network = network
         self.loss = loss
@@ -32,7 +34,7 @@ class DiffusionModule(LightningModule):
         self.t_min, self.t_max = t_min, t_max
 
         # Get betas from scheduler. Pre-compute alphas and their cumulative product.
-        self.beta = self.beta_scheduler(t_max - t_min + 1)
+        self.beta = self.beta_scheduler(t_max - t_min + 1).to(device)
         self.alpha = 1 - self.beta
         self.alpha_hat = torch.cumprod(self.alpha, dim=0)
 
