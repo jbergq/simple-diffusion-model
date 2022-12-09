@@ -16,12 +16,14 @@ class PositionalEncoding(nn.Module):
         """
         super().__init__()
 
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
         i = torch.arange(embedding_size // 2)
         k = torch.arange(max_time_steps).unsqueeze(dim=1)
 
         # Pre-compute the embedding vector for each possible time step.
         # Store in 2D tensor indexed by time step `t` along 0th axis, with embedding vectors along 1st axis.
-        self.pos_embeddings = torch.zeros(max_time_steps, embedding_size, requires_grad=False).cuda()
+        self.pos_embeddings = torch.zeros(max_time_steps, embedding_size, requires_grad=False).to(device)
         self.pos_embeddings[:, 0::2] = torch.sin(k / (n ** (2 * i / embedding_size)))
         self.pos_embeddings[:, 1::2] = torch.cos(k / (n ** (2 * i / embedding_size)))
 
