@@ -28,11 +28,14 @@ def main(cfg: DictConfig) -> None:
     datamodule: LightningDataModule = instantiate(cfg.datamodule)
     model: LightningModule = instantiate(cfg.model)
 
+    # Initialize callbacks.
+    callbacks: DictConfig = instantiate(cfg.callbacks) if cfg.callbacks else {}
+
     # Initialize logger.
     wandb_logger = WandbLogger(name=cfg.name, project=os.environ["CONDA_DEFAULT_ENV"], config=flatten(cfg))
 
     # Initialize trainer.
-    trainer: Trainer = instantiate(cfg.trainer, logger=wandb_logger)
+    trainer: Trainer = instantiate(cfg.trainer, callbacks=list(callbacks.values()), logger=wandb_logger)
 
     # Start the training.
     trainer.fit(model, datamodule)
