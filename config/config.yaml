@@ -1,5 +1,5 @@
 defaults:
-  - _self_
+  - trainer: debug
 
 global:
   max_time_steps: 1000
@@ -34,13 +34,6 @@ datamodule:
       batch_size: 8
       shuffle: False
       num_workers: 8
-trainer:
-  _target_: pytorch_lightning.Trainer
-  max_epochs: 10
-  fast_dev_run: False
-  limit_val_batches: 10
-  accelerator: gpu
-  devices: 1
 
 work_dir: ${hydra:runtime.cwd}
 data_dir: ${work_dir}/data
