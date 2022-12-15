@@ -22,12 +22,12 @@ class DiffusionModule(LightningModule):
         beta_scheduler: Optional[Callable] = None,
     ) -> None:
         super().__init__()
-        
+
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.network = network
         self.loss = loss
-        self.beta_scheduler = beta_scheduler if beta_scheduler is not None else BetaScheduler("linear")
+        self.beta_scheduler = beta_scheduler if beta_scheduler is not None else BetaScheduler("cosine")
         self.fid = FrechetInceptionDistance()
 
         self.t_min, self.t_max = t_min, t_max
@@ -41,12 +41,6 @@ class DiffusionModule(LightningModule):
 
     def _is_last_batch(self, batch_idx: int):
         return batch_idx == self.trainer.num_training_batches - 1
-
-    def _beta_schedule(self, type: str = "linear"):
-        if type == "linear":
-            return
-        else:
-            raise ValueError("Only linear beta scheduling supported.")
 
     def training_step(self, batch: Dict, batch_idx: int, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         imgs_real = batch["img"]

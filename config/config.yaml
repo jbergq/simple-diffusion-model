@@ -17,7 +17,7 @@ model:
   t_max: ${global.max_time_steps}
   beta_scheduler:
     _target_: src.model.beta_scheduler.BetaScheduler
-    type: linear
+    type: cosine
 datamodule:
   _target_: src.data.modules.image.ImageDataModule
   data_dir: ${data_dir}
