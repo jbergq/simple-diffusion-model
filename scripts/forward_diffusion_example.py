@@ -15,6 +15,7 @@ from torchvision.transforms import PILToTensor
 
 from src.utils.diffusion import forward_diffusion
 from src.data.datasets.mnist import MNIST
+from src.model.beta_scheduler import BetaScheduler
 
 
 dataset = MNIST("../data", train=True, download=True, transform=PILToTensor())
@@ -97,6 +98,39 @@ fig, axs = plt.subplots(2)
 
 axs[0].imshow(x_t_hat.permute(1, 2, 0), cmap="gray")
 axs[1].hist(x_t_hat.flatten() * 255, bins=255)
+
+plt.show()
+
+# %% Beta scheduling
+
+beta_scheduler = BetaScheduler("linear")
+
+# Get betas from scheduler. Pre-compute alphas and their cumulative product.
+beta = beta_scheduler(100)
+alpha = 1 - beta
+alpha_hat = torch.cumprod(alpha, dim=0)
+
+ts = torch.tensor([90], dtype=torch.int64)
+
+alpha_hat_t = alpha_hat[ts]
+alpha_hat_t = alpha_hat_t[:, None, None, None]
+
+# Apply noise to images (N steps forward diffusion in closed form).
+img_reshaped = img[None, None, ...]
+noise = torch.normal(0, 1, img_reshaped.shape)
+imgs_noisy = torch.sqrt(alpha_hat_t) * img_reshaped + torch.sqrt(1 - alpha_hat_t) * noise
+
+fig, axs = plt.subplots(2)
+axs[0].plot(beta)
+axs[0].set_ylabel("beta")
+axs[0].set_xlabel("t")
+
+axs[1].plot(alpha_hat)
+axs[1].set_ylabel("alhpa_hat")
+axs[1].set_xlabel("t")
+
+plt.figure()
+plt.imshow(imgs_noisy[0].permute(1, 2, 0).numpy())
 
 plt.show()
 
